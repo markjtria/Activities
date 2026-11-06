@@ -9,94 +9,114 @@
     integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
 
   <style>
-    /* only the hover effect needs custom CSS, everything else is Bootstrap classes */
-    .champ-card:hover { border-color: #dc3545 !important; }
-    .champ-card:hover .card-title { color: #dc3545 !important; }
+    .champ-card:hover {
+      border-color: #dc3545 !important;
+    }
+
+    .champ-card:hover .card-title {
+      color: #dc3545 !important;
+    }
+
+    .tracking {
+      letter-spacing: 2px;
+    }
+
+    .slant {
+      clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
+    }
+
+    #search:focus {
+      box-shadow: none;
+    }
   </style>
 </head>
 
 <body class="bg-black text-white">
-  <nav class="navbar bg-black border-bottom border-danger border-3 py-3">
+  <nav class="navbar bg-black border-bottom border-danger py-3">
     <div class="container">
-      <a class="navbar-brand fw-bold text-danger fs-3" href="index.html">Champions</a>
-      <input type="text" id="search" class="form-control bg-dark text-white border-danger ms-auto w-50"
-        style="max-width: 300px;" placeholder="Search champion..." oninput="searchChampions()">
+      <a class="navbar-brand fw-bold text-white fs-3 text-uppercase tracking" href="index.html">
+        <span class="d-inline-block bg-danger me-2 align-middle" style="width: 8px; height: 26px;"></span>Champions
+      </a>
+      <input type="text" id="search"
+        class="form-control rounded-0 bg-black text-white border-danger border-top-0 border-start-0 border-end-0 ms-auto w-50 text-uppercase tracking"
+        style="max-width: 300px;" placeholder="Search champion" oninput="searchChampions()">
     </div>
   </nav>
-
   <div class="container py-4">
     <div class="row row-cols-3 row-cols-md-4 row-cols-lg-6 g-3" id="parent"></div>
 
-    <div class="d-flex justify-content-center align-items-center gap-3 my-5">
-      <button class="btn btn-danger" onclick="prev()">Previous</button>
-      <div>Page <span id="currentpage" class="text-danger fw-bold">1</span> of <span id="totalpages">1</span></div>
-      <button class="btn btn-danger" onclick="next()">Next</button>
+    <div class="d-flex justify-content-center align-items-center gap-4 my-5">
+      <button class="btn btn-danger rounded-0 slant px-4 text-uppercase tracking" onclick="prev()">Previous</button>
+      <div class="text-uppercase text-secondary tracking">
+        Page <span id="currentpage" class="text-danger fw-bold">1</span> / <span id="totalpages"
+          class="text-white">1</span>
+      </div>
+      <button class="btn btn-danger rounded-0 slant px-4 text-uppercase tracking" onclick="next()">Next</button>
     </div>
-  </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
-    crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+      crossorigin="anonymous"></script>
 
-  <script>
-    var elCurrentPage = document.getElementById("currentpage");
-    var elTotalPages = document.getElementById("totalpages");
-    var elParent = document.getElementById("parent");
-    var elSearch = document.getElementById("search");
+    <script>
+      var elCurrentPage = document.getElementById("currentpage");
+      var elTotalPages = document.getElementById("totalpages");
+      var elParent = document.getElementById("parent");
+      var elSearch = document.getElementById("search");
 
-    const urlParams = new URLSearchParams(window.location.search);
-    var page = urlParams.get('page');
-    if (page == null) {
-      page = 1;
-    } else {
-      page = parseInt(page);
-    }
-
-    var version = "";
-    var allChampions = [];
-    var shownChampions = [];
-
-    var perPage = 18;
-    var finalPage = 1;
-
-    const loadChampions = async () => {
-      elParent.innerHTML = '<div class="col-12 text-center py-5">Loading...</div>';
-      try {
-        const versionResponse = await fetch('https://ddragon.leagueoflegends.com/api/versions.json');
-        const versions = await versionResponse.json();
-        version = versions[0];
-
-        const response = await fetch('https://ddragon.leagueoflegends.com/cdn/' + version + '/data/en_US/champion.json');
-        const result = await response.json();
-
-        allChampions = Object.values(result.data);
-        shownChampions = allChampions;
-        finalPage = Math.ceil(shownChampions.length / perPage);
-        if (page > finalPage) page = 1;
-        showChampions();
-      } catch (error) {
-        elParent.innerHTML = '<div class="col-12 text-center text-danger py-5">Could not load champions. Please refresh the page.</div>';
-      }
-    }
-
-    function showChampions() {
-      elParent.innerHTML = '';
-      elCurrentPage.innerHTML = page;
-      elTotalPages.innerHTML = finalPage;
-
-      if (shownChampions.length == 0) {
-        elParent.innerHTML = '<div class="col-12 text-center py-5">No champion found.</div>';
-        return;
+      const urlParams = new URLSearchParams(window.location.search);
+      var page = urlParams.get('page');
+      if (page == null) {
+        page = 1;
+      } else {
+        page = parseInt(page);
       }
 
-      var start = (page - 1) * perPage;
-      var end = Math.min(page * perPage, shownChampions.length);
+      var version = "";
+      var allChampions = [];
+      var shownChampions = [];
 
-      for (var i = start; i < end; i++) {
-        var c = shownChampions[i];
-        var image = 'https://ddragon.leagueoflegends.com/cdn/' + version + '/img/champion/' + c.image.full;
+      var perPage = 18;
+      var finalPage = 1;
 
-        elParent.innerHTML += `
+      const loadChampions = async () => {
+        elParent.innerHTML = '<div class="col-12 text-center py-5">Loading...</div>';
+        try {
+          const versionResponse = await fetch('https://ddragon.leagueoflegends.com/api/versions.json');
+          const versions = await versionResponse.json();
+          version = versions[0];
+
+          const response = await fetch('https://ddragon.leagueoflegends.com/cdn/' + version + '/data/en_US/champion.json');
+          const result = await response.json();
+
+          allChampions = Object.values(result.data);
+          shownChampions = allChampions;
+          finalPage = Math.ceil(shownChampions.length / perPage);
+          if (page > finalPage) page = 1;
+          showChampions();
+        } catch (error) {
+          elParent.innerHTML = '<div class="col-12 text-center text-danger py-5">Could not load champions. Please refresh the page.</div>';
+        }
+      }
+
+      function showChampions() {
+        elParent.innerHTML = '';
+        elCurrentPage.innerHTML = page;
+        elTotalPages.innerHTML = finalPage;
+
+        if (shownChampions.length == 0) {
+          elParent.innerHTML = '<div class="col-12 text-center py-5">No champion found.</div>';
+          return;
+        }
+
+        var start = (page - 1) * perPage;
+        var end = Math.min(page * perPage, shownChampions.length);
+
+        for (var i = start; i < end; i++) {
+          var c = shownChampions[i];
+          var image = 'https://ddragon.leagueoflegends.com/cdn/' + version + '/img/champion/' + c.image.full;
+
+          elParent.innerHTML += `
           <div class="col">
 <a class="card champ-card h-100 bg-dark border-secondary text-center text-decoration-none" href="view.html?id=${c.id}&page=${page}">              <img class="card-img-top" src="${image}" alt="${c.name}">
               <div class="card-body p-2">
@@ -106,37 +126,37 @@
             </a>
           </div>
         `;
+        }
       }
-    }
 
-    function searchChampions() {
-      var text = elSearch.value.toLowerCase();
-      shownChampions = allChampions.filter(function (c) {
-        return c.name.toLowerCase().includes(text);
-      });
-      page = 1;
-      finalPage = Math.max(1, Math.ceil(shownChampions.length / perPage));
-      showChampions();
-    }
-
-    function prev() {
-      page -= 1;
-      if (page == 0) {
-        page = finalPage;
-      }
-      showChampions();
-    }
-
-    function next() {
-      page += 1;
-      if (page > finalPage) {
+      function searchChampions() {
+        var text = elSearch.value.toLowerCase();
+        shownChampions = allChampions.filter(function (c) {
+          return c.name.toLowerCase().includes(text);
+        });
         page = 1;
+        finalPage = Math.max(1, Math.ceil(shownChampions.length / perPage));
+        showChampions();
       }
-      showChampions();
-    }
 
-    loadChampions();
-  </script>
+      function prev() {
+        page -= 1;
+        if (page == 0) {
+          page = finalPage;
+        }
+        showChampions();
+      }
+
+      function next() {
+        page += 1;
+        if (page > finalPage) {
+          page = 1;
+        }
+        showChampions();
+      }
+
+      loadChampions();
+    </script>
 </body>
 
 </html>
